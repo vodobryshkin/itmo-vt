@@ -1,0 +1,170 @@
+-- Удаление старых таблиц (если существуют) и их зависимостей перед созданием новых
+DROP TABLE IF EXISTS scientist CASCADE;
+DROP TABLE IF EXISTS scientist_card CASCADE;
+DROP TABLE IF EXISTS species CASCADE;
+DROP TABLE IF EXISTS scientist_observation_ratio CASCADE;
+DROP TABLE IF EXISTS observation CASCADE;
+DROP TABLE IF EXISTS creature CASCADE;
+DROP TABLE IF EXISTS planet CASCADE;
+DROP TABLE IF EXISTS galaxy CASCADE;
+DROP TABLE IF EXISTS journal_article CASCADE;
+
+-- Удаление старых типов данных (если существуют)
+DROP TYPE IF EXISTS PLANET_TYPE CASCADE;
+DROP TYPE IF EXISTS SIZE_CHAR CASCADE;
+DROP TYPE IF EXISTS COLOR CASCADE;
+DROP TYPE IF EXISTS MOOD CASCADE;
+
+-- Создание enum'ов для полей таблицы
+CREATE TYPE PLANET_TYPE AS ENUM ('земной', 'газовый гигант', 'карликовая планета');
+CREATE TYPE SIZE_CHAR AS ENUM ('огромное', 'большое', 'маленькое', 'очень маленькое');
+CREATE TYPE COLOR AS ENUM ('красное', 'оранжевое', 'жёлтое', 'зелёное', 'голубое', 'синее', 'фиолетовое');
+CREATE TYPE MOOD AS ENUM ('очень хорошие', 'хорошие', 'смешанные', 'плохие', 'ужасные');
+
+-- Создание таблицы galaxy
+CREATE TABLE galaxy (
+    galaxy_id SERIAL PRIMARY KEY,
+    name VARCHAR(32) NOT NULL,
+    age BIGINT,
+    number_of_planets BIGINT
+);
+
+-- Создание таблицы planet
+CREATE TABLE planet (
+    planet_id SERIAL PRIMARY KEY,
+    planet_type PLANET_TYPE,
+    name VARCHAR(32) NOT NULL,
+    is_life_exists BOOLEAN,
+    has_satellite BOOLEAN,
+    galaxy_id INTEGER REFERENCES galaxy(galaxy_id)
+);
+
+-- Создание таблицы species
+CREATE TABLE species (
+    species_id SERIAL PRIMARY KEY,
+    name VARCHAR(64) NOT NULL,
+    average_weight REAL,
+    average_height REAL,
+    is_mammal BOOLEAN
+);
+
+-- Создание таблицы creature
+CREATE TABLE creature (
+    creature_id SERIAL PRIMARY KEY,
+    form TEXT NOT NULL,
+    color COLOR NOT NULL,
+    age BIGINT,
+    species_id INTEGER REFERENCES species(species_id)
+);
+
+-- Создание таблицы scientist_card
+CREATE TABLE scientist_card (
+    scientist_card_id SERIAL PRIMARY KEY,
+    quality VARCHAR(32),
+    experience SMALLINT,
+    is_nobel_prize_owner BOOLEAN
+);
+
+-- Создание таблицы scientist
+CREATE TABLE scientist (
+    scientist_id SERIAL PRIMARY KEY,
+    name VARCHAR(32) NOT NULL,
+    surname VARCHAR(32) NOT NULL,
+    age SMALLINT,
+    scientist_card_id INTEGER REFERENCES scientist_card(scientist_card_id)
+);
+
+-- Создание таблицы journal_article
+CREATE TABLE journal_article (
+    journal_article_id SERIAL PRIMARY KEY,
+    reviews MOOD,
+    start_page SMALLINT NOT NULL,
+    end_page SMALLINT NOT NULL,
+    got_any_prizes BOOLEAN
+);
+
+-- Создание таблицы observation
+CREATE TABLE observation (
+    observation_id SERIAL PRIMARY KEY,
+    date DATE NOT NULL,
+    time_start TIME NOT NULL,
+    time_end TIME NOT NULL,
+    is_published BOOLEAN,
+    budget MONEY,
+    planet_id INTEGER REFERENCES planet(planet_id),
+    creature_id INTEGER REFERENCES creature(creature_id),
+    journal_article_id INTEGER REFERENCES journal_article(journal_article_id)
+);
+
+-- Создание таблицы scientist_observation_ratio
+CREATE TABLE scientist_observation_ratio (
+    scientist_id INTEGER REFERENCES scientist(scientist_id),
+    observation_id INTEGER REFERENCES observation(observation_id)
+    PRIMARY KEY(observation_id, scientist_id)
+);
+
+-- Добавление в таблицу galaxy
+INSERT INTO galaxy (name, age, number_of_planets) VALUES 
+('Млечный путь', 13600000000, 150000000000),
+('Андромеда', 10000000000, 10000000000000),
+('Галактика Треугольник', 10000000000, 50000000000),
+('Галактика Сомбреро', 9500000000, 120000000000);
+
+-- Добавление в таблицу planet
+INSERT INTO planet (galaxy_id, planet_type, name, is_life_exists, has_satellite) VALUES 
+(1, 'земной', 'Земля', TRUE, TRUE),
+(1, 'газовый гигант', 'Юпитер', FALSE, TRUE),
+(2, 'земной', 'Андромеда-IV', TRUE, FALSE),
+(3, 'карликовая планета', 'Треугольник-IX', FALSE, FALSE),
+(4, 'земной', 'Сомбреро-V', TRUE, TRUE);
+
+-- Добавление в таблицу species
+INSERT INTO species (name, average_weight, average_height, is_mammal) VALUES 
+('Дракон', 70.5, 175.0, TRUE),
+('Летающий орк', 50.0, 200.0, FALSE),
+('Космические Хищники', 30.0, 120.0, TRUE),
+('Космические пастухи', 80.0, 250.0, FALSE);
+
+-- Добавление в таблицу creature
+INSERT INTO creature (species_id, form, color, age) VALUES 
+(1, 'аэростат', 'голубое', 30),
+(2, 'самолёт', 'зелёное', 100),
+(3, 'вертолёт', 'красное', 50),
+(4, 'подводная лодка', 'фиолетовое', 200);
+
+-- Добавление в таблицу scientist_card
+INSERT INTO scientist_card (quality, experience, is_nobel_prize_owner) VALUES 
+('высокое', 20, TRUE),
+('среднее', 10, FALSE),
+('низкое', 5, FALSE),
+('высокое', 15, TRUE);
+
+-- Добавление в таблицу scientist
+INSERT INTO scientist (scientist_card_id, name, surname, age) VALUES 
+(1, 'Жак', 'Уэбстер II', 33),
+(2, 'Раким', 'Маерс', 36),
+(3, 'Уолтер', 'Уайт', 51),
+(4, 'Обри', 'Грэм', 38);
+
+-- Добавление в таблицу journal_article
+INSERT INTO journal_article (reviews, start_page, end_page, got_any_prizes) VALUES 
+('очень хорошие', 1, 10, TRUE),
+('хорошие', 11, 20, TRUE),
+('смешанные', 21, 30, TRUE),
+('плохие', 31, 40, FALSE);
+
+-- Добавление в таблицу observation
+INSERT INTO observation (planet_id, creature_id, journal_article_id, date, time_start, time_end, is_published, budget) VALUES 
+(1, 1, 1, '2025-01-01', '10:00:00', '12:00:00', TRUE, 100000000000.00),
+(2, 2, 2, '2024-01-01', '14:00:00', '16:00:00', FALSE, 200000000000.00),
+(3, 3, 3, '2023-01-01', '09:00:00', '11:00:00', TRUE, 15000000000.00),
+(4, 4, 4, '2022-01-01', '13:00:00', '15:00:00', FALSE, 2500000000.00);
+
+-- Добавление в таблицу scientist_observation_ratio
+INSERT INTO scientist_observation_ratio (observation_id, scientist_id) VALUES 
+(1, 1),
+(1, 2),
+(2, 3),
+(3, 3),
+(3, 1),
+(1, 4);

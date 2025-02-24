@@ -1,0 +1,6 @@
+id,name,coordinates_x,coordinates_y,creationDate,oscarsCount,genre,mpaaRating,operator_name,operator_height,operator_eyeColor,operator_hairColor,operator_nationality,operator_location_x,operator_location_y,operator_location_z
+4,1111,1,2,2025-02-23,3,ACTION,G,null,null,null,null,null,null,null,null
+5,111111,1,2,2025-01-23,3,ACTION,NC_17,null,null,null,null,null,null,null,null
+6,vo,1,2,2025-02-23,3,ACTION,G,null,null,null,null,null,null,null,null
+7,11111111,1,2,2025-02-23,3,ACTION,G,null,null,null,null,null,null,null,null
+8,1,2,3,2025-02-24,9,ACTION,G,1,2,null,RED,null,1,2.0,3
